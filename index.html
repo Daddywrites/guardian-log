@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Guardian Log">
+<meta name="theme-color" content="#00b4d8">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Guardian Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d0f;
+    --surface: #111518;
+    --surface2: #161b1f;
+    --border: #1e2830;
+    --accent: #00b4d8;
+    --accent-dim: #0077a0;
+    --red: #e63946;
+    --amber: #f4a261;
+    --green: #2ec4b6;
+    --text: #c8d6df;
+    --text-dim: #5a7080;
+    --text-bright: #e8f4f8;
+    --mono: 'Share Tech Mono', monospace;
+    --sans: 'Barlow', sans-serif;
+    --cond: 'Barlow Condensed', sans-serif;
+    --safe-top: env(safe-area-inset-top);
+    --safe-bot: env(safe-area-inset-bottom);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  body {
+    color: var(--text);
+    font-family: var(--sans);
+    font-weight: 300;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    padding-top: calc(12px + var(--safe-top));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .vessel-id {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .header-title {
+    font-family: var(--cond);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-bright);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .header-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 8px 12px;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: var(--bg);
+    cursor: pointer;
+    letter-spacing: 1px;
+    font-weight: 600;
+    border-radius: 2px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .tab {
+    flex: 1;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 11px 8px;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* SCROLL AREA */
+  .scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px;
+    padding-bottom: calc(24px + var(--safe-bot));
+  }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 2px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--accent);
+  }
+
+  .section-title {
+    font-family: var(--cond);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-bright);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .section-body { padding: 12px; }
+
+  /* FORM ELEMENTS */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .meta-item { display: flex; flex-direction: column; gap: 4px; }
+
+  .meta-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  input, select, textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-bright);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 9px 10px;
+    width: 100%;
+    outline: none;
+    border-radius: 2px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7080' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+  }
+
+  select option { background: #161b1f; }
+
+  textarea {
+    resize: none;
+    min-height: 85px;
+    line-height: 1.6;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 300;
+  }
+
+  /* DEFECT TABLE */
+  .defect-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .defect-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .defect-row:first-child { padding-top: 0; }
+
+  .defect-system {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-bright);
+    margin-bottom: 6px;
+  }
+
+  .defect-note-input {
+    font-size: 12px;
+    min-height: 36px;
+    padding: 6px 8px;
+  }
+
+  .status-select {
+    width: auto;
+    font-size: 11px;
+    padding: 6px 24px 6px 8px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-radius: 2px;
+  }
+
+  .status-faulty { background: rgba(230,57,70,0.15); color: var(--red); border: 1px solid rgba(230,57,70,0.3); }
+  .status-offline { background: rgba(244,162,97,0.15); color: var(--amber); border: 1px solid rgba(244,162,97,0.3); }
+  .status-monitor { background: rgba(0,180,216,0.15); color: var(--accent); border: 1px solid rgba(0,180,216,0.3); }
+  .status-ok { background: rgba(46,196,182,0.15); color: var(--green); border: 1px solid rgba(46,196,182,0.3); }
+
+  /* CREW */
+  .crew-row {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .crew-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .crew-row:first-child { padding-top: 0; }
+
+  .crew-role {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+
+  /* SPECIAL BOXES */
+  .insight-box { border-left: 2px solid var(--accent); padding-left: 10px; }
+  .anomaly-box { border-left: 2px solid var(--red); padding-left: 10px; }
+
+  /* SAVE BUTTON */
+  .save-btn {
+    width: 100%;
+    padding: 15px;
+    background: var(--accent);
+    border: none;
+    color: var(--bg);
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border-radius: 2px;
+    margin-bottom: 12px;
+  }
+
+  .clear-btn {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border-radius: 2px;
+    margin-bottom: 8px;
+  }
+
+  /* ENTRIES */
+  .entry-card {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 14px;
+    margin-bottom: 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    -webkit-user-select: none;
+  }
+
+  .entry-card:active { border-color: var(--accent-dim); background: var(--surface2); }
+
+  .entry-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+
+  .entry-date {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-bright);
+  }
+
+  .entry-meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    text-align: right;
+    line-height: 1.7;
+  }
+
+  .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+
+  .entry-preview {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+  }
+
+  .empty-mono {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent-dim);
+    margin-bottom: 12px;
+  }
+
+  /* DETAIL VIEW */
+  .detail-field {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .detail-field:last-child { border-bottom: none; }
+
+  .detail-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .detail-value {
+    font-size: 13px;
+    color: var(--text-bright);
+    line-height: 1.6;
+  }
+
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+  }
+
+  .delete-btn {
+    width: 100%;
+    padding: 13px;
+    background: transparent;
+    border: 1px solid var(--red);
+    color: var(--red);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border-radius: 2px;
+    margin-top: 8px;
+  }
+
+  /* EXPORT */
+  .export-btn {
+    width: 100%;
+    padding: 13px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border-radius: 2px;
+    margin-bottom: 8px;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: calc(24px + var(--safe-bot));
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--accent);
+    color: var(--bg);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 11px 20px;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 999;
+    white-space: nowrap;
+    border-radius: 2px;
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .hidden { display: none !important; }
+
+  ::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="vessel-id">PRIVATE — PERSONAL RECORD</div>
+    <div class="header-title">Guardian // Log</div>
+  </div>
+  <button class="header-btn" onclick="exportLog()">EXPORT</button>
+</div>
+
+<div class="tabs">
+  <button class="tab active" id="tab-new" onclick="showTab('new')">NEW ENTRY</button>
+  <button class="tab" id="tab-entries" onclick="showTab('entries')">LOG ENTRIES</button>
+</div>
+
+<!-- NEW ENTRY -->
+<div class="scroll-area" id="view-new">
+
+  <div class="section">
+    <div class="section-header"><div class="section-tag">01</div><div class="section-title">Watch Header</div></div>
+    <div class="section-body">
+      <div class="meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">Date</div>
+          <input type="date" id="f-date">
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Watch</div>
+          <select id="f-watch">
+            <option value="">Select</option>
+            <option>0600 – 1800</option>
+            <option>1800 – 0600</option>
+          </select>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Tide</div>
+          <select id="f-tide">
+            <option value="">Select</option>
+            <option>Rising</option>
+            <option>Falling</option>
+            <option>Slack — HW</option>
+            <option>Slack — LW</option>
+          </select>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Wind</div>
+          <input type="text" id="f-wind" placeholder="e.g. NE 3">
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Inspector</div>
+          <input type="text" id="f-inspector" placeholder="Name / Initials">
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Sector</div>
+          <select id="f-sector">
+            <option value="">Select</option>
+            <option>Eastern Sector</option>
+            <option>St John Island</option>
+            <option>Western Sector</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><div class="section-tag">02</div><div class="section-title">Vessel Behaviour</div></div>
+    <div class="section-body">
+      <textarea id="f-vessel" placeholder="Throttle response, manoeuvrability, squat at speed, berth approach. Anything different from previous watch."></textarea>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><div class="section-tag">03</div><div class="section-title">Defect Status</div></div>
+    <div class="section-body">
+
+      <div class="defect-row">
+        <div>
+          <div class="defect-system">Stbd Hydraulic</div>
+          <input type="text" class="defect-note-input" id="dn-hydro" placeholder="Observation">
+        </div>
+        <select class="status-select" id="d-hydro">
+          <option value="faulty">FAULTY</option>
+          <option value="monitor">MONITOR</option>
+          <option value="ok">OK</option>
+        </select>
+      </div>
+
+      <div class="defect-row">
+        <div>
+          <div class="defect-system">BMS Rack 3</div>
+          <input type="text" class="defect-note-input" id="dn-bms" placeholder="Observation">
+        </div>
+        <select class="status-select" id="d-bms">
+          <option value="offline">OFFLINE</option>
+          <option value="monitor">MONITOR</option>
+          <option value="ok">OK</option>
+        </select>
+      </div>
+
+      <div class="defect-row">
+        <div>
+          <div class="defect-system">Throttle Comms</div>
+          <input type="text" class="defect-note-input" id="dn-throttle" placeholder="Observation">
+        </div>
+        <select class="status-select" id="d-throttle">
+          <option value="monitor">MONITOR</option>
+          <option value="faulty">FAULTY</option>
+          <option value="ok">OK</option>
+        </select>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><div class="section-tag">04</div><div class="section-title">Crew Observations</div></div>
+    <div class="section-body">
+      <div class="crew-row">
+        <div class="crew-role">ENG</div>
+        <input type="text" id="c-eng" placeholder="Behaviour, performance, attitude">
+      </div>
+      <div class="crew-row">
+        <div class="crew-role">AB-F</div>
+        <input type="text" id="c-abf" placeholder="Behaviour, performance, attitude">
+      </div>
+      <div class="crew-row">
+        <div class="crew-role">AB-A</div>
+        <input type="text" id="c-aba" placeholder="Behaviour, performance, attitude">
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><div class="section-tag">05</div><div class="section-title">Inspector Patterns</div></div>
+    <div class="section-body">
+      <textarea id="f-inspector-notes" placeholder="Communication style, route preferences, decision tendencies."></textarea>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><div class="section-tag">06</div><div class="section-title">Near Miss / Anomaly</div></div>
+    <div class="section-body">
+      <div class="anomaly-box">
+        <textarea id="f-anomaly" placeholder="Anything that almost went wrong or felt off. If nothing — write NIL."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><div class="section-tag">07</div><div class="section-title">Operational Insight</div></div>
+    <div class="section-body">
+      <div class="insight-box">
+        <textarea id="f-insight" placeholder="One observation about how things actually run vs how they should. Your thinking space."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><div class="section-tag">08</div><div class="section-title">Follow Up</div></div>
+    <div class="section-body">
+      <textarea id="f-followup" placeholder="Anything needing action, monitoring, or remembering next watch."></textarea>
+    </div>
+  </div>
+
+  <button class="save-btn" onclick="saveEntry()">SAVE ENTRY</button>
+  <button class="clear-btn" onclick="clearForm()">CLEAR FORM</button>
+
+</div>
+
+<!-- ENTRIES -->
+<div class="scroll-area hidden" id="view-entries">
+  <div id="entries-container"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Set today
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+
+  function showTab(tab) {
+    document.getElementById('view-new').classList.toggle('hidden', tab !== 'new');
+    document.getElementById('view-entries').classList.toggle('hidden', tab !== 'entries');
+    document.getElementById('tab-new').classList.toggle('active', tab === 'new');
+    document.getElementById('tab-entries').classList.toggle('active', tab === 'entries');
+    if (tab === 'entries') renderEntries();
+  }
+
+  function getEntries() {
+    try { return JSON.parse(localStorage.getItem('guardian_log_v2') || '[]'); }
+    catch { return []; }
+  }
+
+  function saveEntries(e) { localStorage.setItem('guardian_log_v2', JSON.stringify(e)); }
+
+  function saveEntry() {
+    const date = document.getElementById('f-date').value;
+    if (!date) { showToast('DATE REQUIRED'); return; }
+
+    const entry = {
+      id: Date.now(),
+      date,
+      watch: document.getElementById('f-watch').value,
+      tide: document.getElementById('f-tide').value,
+      wind: document.getElementById('f-wind').value,
+      inspector: document.getElementById('f-inspector').value,
+      sector: document.getElementById('f-sector').value,
+      vessel: document.getElementById('f-vessel').value,
+      defects: {
+        hydro: { status: document.getElementById('d-hydro').value, note: document.getElementById('dn-hydro').value },
+        bms: { status: document.getElementById('d-bms').value, note: document.getElementById('dn-bms').value },
+        throttle: { status: document.getElementById('d-throttle').value, note: document.getElementById('dn-throttle').value }
+      },
+      crew: {
+        eng: document.getElementById('c-eng').value,
+        abf: document.getElementById('c-abf').value,
+        aba: document.getElementById('c-aba').value
+      },
+      inspectorNotes: document.getElementById('f-inspector-notes').value,
+      anomaly: document.getElementById('f-anomaly').value,
+      insight: document.getElementById('f-insight').value,
+      followup: document.getElementById('f-followup').value
+    };
+
+    const entries = getEntries();
+    entries.unshift(entry);
+    saveEntries(entries);
+    showToast('ENTRY SAVED');
+    clearForm();
+  }
+
+  function clearForm() {
+    document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+    ['f-watch','f-tide','f-sector'].forEach(id => document.getElementById(id).value = '');
+    ['f-wind','f-inspector','f-vessel','f-inspector-notes','f-anomaly','f-insight','f-followup'].forEach(id => document.getElementById(id).value = '');
+    ['c-eng','c-abf','c-aba','dn-hydro','dn-bms','dn-throttle'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('d-hydro').value = 'faulty';
+    document.getElementById('d-bms').value = 'offline';
+    document.getElementById('d-throttle').value = 'monitor';
+  }
+
+  function statusBadge(status) {
+    const map = { faulty:['status-faulty','FAULTY'], offline:['status-offline','OFFLINE'], monitor:['status-monitor','MONITOR'], ok:['status-ok','OK'] };
+    const [cls, label] = map[status] || ['status-monitor', (status||'').toUpperCase()];
+    return `<span class="status-badge ${cls}">${label}</span>`;
+  }
+
+  function formatDate(ds) {
+    if (!ds) return '—';
+    const d = new Date(ds + 'T00:00:00');
+    return d.toLocaleDateString('en-GB', { weekday:'short', day:'2-digit', month:'short', year:'numeric' }).toUpperCase();
+  }
+
+  function renderEntries() {
+    const entries = getEntries();
+    const c = document.getElementById('entries-container');
+    if (!entries.length) {
+      c.innerHTML = `<div class="empty-state"><div class="empty-mono">NO ENTRIES YET</div><p style="font-size:13px;line-height:1.7;">Your log is empty.<br>Start your first entry from the New Entry tab.</p></div>`;
+      return;
+    }
+    c.innerHTML = entries.map(e => `
+      <div class="entry-card" onclick="viewEntry(${e.id})">
+        <div class="entry-card-header">
+          <div class="entry-date">${formatDate(e.date)}</div>
+          <div class="entry-meta">${e.watch || '—'}<br>${e.sector || '—'}</div>
+        </div>
+        <div class="badges">
+          ${statusBadge(e.defects.hydro.status)}
+          ${statusBadge(e.defects.bms.status)}
+          ${statusBadge(e.defects.throttle.status)}
+        </div>
+        ${e.insight ? `<div class="entry-preview">${e.insight.substring(0,110)}${e.insight.length>110?'...':''}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  function viewEntry(id) {
+    const e = getEntries().find(x => x.id === id);
+    if (!e) return;
+    const c = document.getElementById('entries-container');
+    c.innerHTML = `
+      <button class="back-btn" onclick="renderEntries()">← ALL ENTRIES</button>
+
+      <div class="section">
+        <div class="section-header"><div class="section-tag">01</div><div class="section-title">Watch Header</div></div>
+        <div class="section-body">
+          <div class="meta-grid">
+            <div class="meta-item"><div class="meta-label">Date</div><div class="detail-value" style="padding:6px 0;">${formatDate(e.date)}</div></div>
+            <div class="meta-item"><div class="meta-label">Watch</div><div class="detail-value" style="padding:6px 0;">${e.watch||'—'}</div></div>
+            <div class="meta-item"><div class="meta-label">Tide</div><div class="detail-value" style="padding:6px 0;">${e.tide||'—'}</div></div>
+            <div class="meta-item"><div class="meta-label">Wind</div><div class="detail-value" style="padding:6px 0;">${e.wind||'—'}</div></div>
+            <div class="meta-item"><div class="meta-label">Inspector</div><div class="detail-value" style="padding:6px 0;">${e.inspector||'—'}</div></div>
+            <div class="meta-item"><div class="meta-label">Sector</div><div class="detail-value" style="padding:6px 0;">${e.sector||'—'}</div></div>
+          </div>
+        </div>
+      </div>
+
+      ${e.vessel ? `<div class="section"><div class="section-header"><div class="section-tag">02</div><div class="section-title">Vessel Behaviour</div></div><div class="section-body"><div class="detail-value">${e.vessel}</div></div></div>` : ''}
+
+      <div class="section">
+        <div class="section-header"><div class="section-tag">03</div><div class="section-title">Defect Status</div></div>
+        <div class="section-body">
+          <div class="defect-row"><div><div class="defect-system">Stbd Hydraulic</div><div style="font-size:12px;color:var(--text);margin-top:4px;">${e.defects.hydro.note||'—'}</div></div>${statusBadge(e.defects.hydro.status)}</div>
+          <div class="defect-row"><div><div class="defect-system">BMS Rack 3</div><div style="font-size:12px;color:var(--text);margin-top:4px;">${e.defects.bms.note||'—'}</div></div>${statusBadge(e.defects.bms.status)}</div>
+          <div class="defect-row"><div><div class="defect-system">Throttle Comms</div><div style="font-size:12px;color:var(--text);margin-top:4px;">${e.defects.throttle.note||'—'}</div></div>${statusBadge(e.defects.throttle.status)}</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header"><div class="section-tag">04</div><div class="section-title">Crew Observations</div></div>
+        <div class="section-body">
+          <div class="crew-row"><div class="crew-role">ENG</div><div class="detail-value">${e.crew.eng||'—'}</div></div>
+          <div class="crew-row"><div class="crew-role">AB-F</div><div class="detail-value">${e.crew.abf||'—'}</div></div>
+          <div class="crew-row"><div class="crew-role">AB-A</div><div class="detail-value">${e.crew.aba||'—'}</div></div>
+        </div>
+      </div>
+
+      ${e.inspectorNotes ? `<div class="section"><div class="section-header"><div class="section-tag">05</div><div class="section-title">Inspector Patterns</div></div><div class="section-body"><div class="detail-value">${e.inspectorNotes}</div></div></div>` : ''}
+      ${e.anomaly ? `<div class="section"><div class="section-header"><div class="section-tag">06</div><div class="section-title">Near Miss / Anomaly</div></div><div class="section-body"><div class="anomaly-box"><div class="detail-value">${e.anomaly}</div></div></div></div>` : ''}
+      ${e.insight ? `<div class="section"><div class="section-header"><div class="section-tag">07</div><div class="section-title">Operational Insight</div></div><div class="section-body"><div class="insight-box"><div class="detail-value">${e.insight}</div></div></div></div>` : ''}
+      ${e.followup ? `<div class="section"><div class="section-header"><div class="section-tag">08</div><div class="section-title">Follow Up</div></div><div class="section-body"><div class="detail-value">${e.followup}</div></div></div>` : ''}
+
+      <button class="delete-btn" onclick="deleteEntry(${e.id})">DELETE ENTRY</button>
+    `;
+    c.scrollTop = 0;
+  }
+
+  function deleteEntry(id) {
+    if (!confirm('Delete this entry? Cannot be undone.')) return;
+    saveEntries(getEntries().filter(e => e.id !== id));
+    renderEntries();
+    showToast('DELETED');
+  }
+
+  function exportLog() {
+    const entries = getEntries();
+    if (!entries.length) { showToast('NO ENTRIES TO EXPORT'); return; }
+    const text = entries.map(e => [
+      `=== ${formatDate(e.date)} | ${e.watch||''} | ${e.sector||''} ===`,
+      `TIDE: ${e.tide||'—'} | WIND: ${e.wind||'—'} | INSPECTOR: ${e.inspector||'—'}`,
+      ``,
+      `VESSEL: ${e.vessel||'—'}`,
+      ``,
+      `DEFECTS:`,
+      `  Stbd Hydraulic: ${(e.defects.hydro.status||'').toUpperCase()} — ${e.defects.hydro.note||'—'}`,
+      `  BMS Rack 3: ${(e.defects.bms.status||'').toUpperCase()} — ${e.defects.bms.note||'—'}`,
+      `  Throttle Comms: ${(e.defects.throttle.status||'').toUpperCase()} — ${e.defects.throttle.note||'—'}`,
+      ``,
+      `CREW:`,
+      `  ENG: ${e.crew.eng||'—'}`,
+      `  AB-F: ${e.crew.abf||'—'}`,
+      `  AB-A: ${e.crew.aba||'—'}`,
+      ``,
+      `INSPECTOR PATTERNS: ${e.inspectorNotes||'—'}`,
+      `ANOMALY: ${e.anomaly||'—'}`,
+      `INSIGHT: ${e.insight||'—'}`,
+      `FOLLOW UP: ${e.followup||'—'}`,
+      ``
+    ].join('\n')).join('\n' + '='.repeat(50) + '\n\n');
+
+    const blob = new Blob([`MPA GUARDIAN — PRIVATE OPERATIONAL LOG\nCaptain Ashok Radhakrishnan\nExported: ${new Date().toLocaleString()}\n\n${'='.repeat(50)}\n\n` + text], {type:'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `guardian_log_${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    showToast('LOG EXPORTED');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+</script>
+</body>
+</html>
